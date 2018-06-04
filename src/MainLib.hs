@@ -8,5 +8,7 @@ class MyIO a where
 instance MyIO P.IO where
   putStrLn = P.putStrLn
 
-main :: MyIO a => a ()
-main = putStrLn "Hello, Haskell!"
+main :: (MyIO a, P.Monad a) => a ()
+main = do
+  putStrLn "Hello, Haskell!"
+  putStrLn "Goodbye!"

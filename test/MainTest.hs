@@ -29,6 +29,12 @@ data MockSimpleIO a = MockSimpleIO
 instance MainLib.MyIO MockSimpleIO where
   putStrLn msg = MockSimpleIO msg ()
 
+instance Monad MockSimpleIO where
+  return v = MockSimpleIO "" v
+  MockSimpleIO msg a >>= f = MockSimpleIO (msg++newMsg) b
+                      where
+                       MockSimpleIO newMsg b = f a
+
 mainWritesDownProperMessageSimple :: HU.Test 
 mainWritesDownProperMessageSimple = HU.TestCase $ do 
                                     let message = getMessage MainLib.main 
