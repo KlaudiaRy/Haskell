@@ -8,40 +8,35 @@ import qualified Control.Monad.Trans.Class (MonadTrans)
 import qualified Data.Functor.Identity (Identity)
 import System.Exit (ExitCode(..),exitWith)
 
-data MockIO m a = MockIO 
-                              { runMessage :: Control.Monad.Writer.WriterT String m a }
- 
-instance Monad m => MainLib.MyIO (MockIO m) where
-  putStrLn msg = MockIO $ do
-                            Control.Monad.Writer.tell msg
-                            return ()
-
-
-mainWritesDownProperMessage :: HU.Test 
-mainWritesDownProperMessage = HU.TestCase $ do 
-                                    let message = Control.Monad.Writer.execWriter $ runMessage MainLib.main 
-                                    HU.assertEqual "proper message" "Hello World!" message
-
-
 data MockSimpleIO a = MockSimpleIO 
-                              { getMessage :: String, dummy::a }
+                              { getMessages :: [String], dummy::a }
+
+
  
 instance MainLib.MyIO MockSimpleIO where
-  putStrLn msg = MockSimpleIO msg ()
+  putStrLn msg = MockSimpleIO [msg] ()
+
+instance Functor MockSimpleIO where
+  fmap f (MockSimpleIO msgs a) = MockSimpleIO msgs (f a)
+
+instance Applicative MockSimpleIO where 
+  pure v = MockSimpleIO [] v
+  MockSimpleIO msgs1 f <*> MockSimpleIO msgs2 a = MockSimpleIO (msgs1 ++ msgs2) (f a)
 
 instance Monad MockSimpleIO where
-  return v = MockSimpleIO "" v
+  return v = MockSimpleIO [] v
   MockSimpleIO msg a >>= f = MockSimpleIO (msg++newMsg) b
                       where
                        MockSimpleIO newMsg b = f a
 
 mainWritesDownProperMessageSimple :: HU.Test 
 mainWritesDownProperMessageSimple = HU.TestCase $ do 
-                                    let message = getMessage MainLib.main 
-                                    HU.assertEqual "proper message" "Hello World!" message
+                                    let messages = getMessages MainLib.main 
+                                    HU.assertEqual "proper message" "Hello, Haskell!" (messages !! 0)
+                                    HU.assertEqual "proper message" "Goodbye!" (messages !! 1)
 
 allTests :: HU.Test
-allTests = HU.TestList [HU.TestLabel "main message" mainWritesDownProperMessage, HU.TestLabel "main message simple" mainWritesDownProperMessageSimple]
+allTests = HU.TestList [HU.TestLabel "main message simple" mainWritesDownProperMessageSimple]
 
 main :: IO Int
 main = do
