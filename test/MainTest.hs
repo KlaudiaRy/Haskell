@@ -22,8 +22,20 @@ mainWritesDownProperMessage = HU.TestCase $ do
                                     let message = Control.Monad.Writer.execWriter $ runMessage MainLib.main 
                                     HU.assertEqual "proper message" "Hello World!" message
 
+
+data MockSimpleIO a = MockSimpleIO 
+                              { getMessage :: String, dummy::a }
+ 
+instance MainLib.MyIO MockSimpleIO where
+  putStrLn msg = MockSimpleIO msg ()
+
+mainWritesDownProperMessageSimple :: HU.Test 
+mainWritesDownProperMessageSimple = HU.TestCase $ do 
+                                    let message = getMessage MainLib.main 
+                                    HU.assertEqual "proper message" "Hello World!" message
+
 allTests :: HU.Test
-allTests = HU.TestList [HU.TestLabel "main message" mainWritesDownProperMessage]
+allTests = HU.TestList [HU.TestLabel "main message" mainWritesDownProperMessage, HU.TestLabel "main message simple" mainWritesDownProperMessageSimple]
 
 main :: IO Int
 main = do
