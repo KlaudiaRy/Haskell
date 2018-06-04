@@ -1,11 +1,12 @@
 module Main where
 
 import qualified MainLib
-import qualified Test.HUnit  as HU (Assertion, Test(..), assertEqual, assertBool, runTestTT, Counts)
+import qualified Test.HUnit  as HU (Assertion, Test(..), assertEqual, assertBool, runTestTT, Counts, failures, errors)
 import qualified Control.Monad.Writer (WriterT, tell, execWriter)
 import qualified Control.Applicative (Applicative)
 import qualified Control.Monad.Trans.Class (MonadTrans)
 import qualified Data.Functor.Identity (Identity)
+import System.Exit (ExitCode(..),exitWith)
 
 data MockIO m a = MockIO 
                               { runMessage :: Control.Monad.Writer.WriterT String m a }
@@ -24,7 +25,13 @@ mainWritesDownProperMessage = HU.TestCase $ do
 allTests :: HU.Test
 allTests = HU.TestList [HU.TestLabel "main message" mainWritesDownProperMessage]
 
-main :: IO HU.Counts
-main = HU.runTestTT allTests
+main :: IO Int
+main = do
+    results <-  HU.runTestTT allTests
+    if (HU.errors results + HU.failures results == 0)
+    then
+      exitWith ExitSuccess
+    else
+      exitWith (ExitFailure 1)
 
 
