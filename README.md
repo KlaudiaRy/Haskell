@@ -16,5 +16,8 @@
 
 # haskell tutorials worth checking out
 [haskell dev-oriented tutorial](http://dev.stephendiehl.com/hask/)
+
 [haskell rest server how-to](https://lettier.github.io/posts/2016-07-15-building-a-haskell-web-api.html)
 
+
+[rediscovered in js](https://medium.com/@riccardoodone/spice-up-your-javascript-5314bf28f3e5) 
